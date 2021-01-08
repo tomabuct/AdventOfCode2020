@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>struct Circle {
+    private class Node: Hashable {
+        var prev, next: Node!
+        var hashValue: Int { ObjectIdentifier(self).hashValue }
+        static func == (l: Node, r: Node) -&gt; Bool { l === r }
+    }
+    
+    private var end: Node?
+    private var n2nodes = [Int: Node]()
+    private var nodes2n = [Node: Int]()
+    
+    init(_ ns: [Int]) {
+        for n in ns { append(n) }
+    }
+    
+    func max() -&gt; Int? { n2nodes.keys.max() }
+    
+    mutating func append(_ n: Int) {
+        if let end = end {
+            insert(n, after: nodes2n[end]!)
+            
+        } else {
+            let new = Node()
+            n2nodes[n] = new
+            nodes2n[new] = n
+            new.next = new
+            new.prev = new
+            end = new
+        }
+    }
+    
+    mutating func insert(_ n: Int, after: Int) {
+        let new = Node()
+        n2nodes[n] = new
+        nodes2n[new] = n
+        
+        let node = n2nodes[after]!
+        node.next.prev = new
+        new.next = node.next
+        node.next = new
+        new.prev = node
+        
+        if end == node { end = new }
+    }
+    
+    mutating func remove(_ n: Int) {
+        let node = n2nodes[n]!
+        node.prev.next = node.next
+        node.next.prev = node.prev
+        n2nodes[n] = nil
+        nodes2n[node] = nil
+        
+        if end == node { end = node.prev }
+    }
+    
+    func contains(_ n: Int) -&gt; Bool {
+        n2nodes[n] != nil
+    }
+    
+    func next(_ n: Int) -&gt; Int {
+        nodes2n[n2nodes[n]!.next]!
+    }
+    
+    func prev(_ n: Int) -&gt; Int {
+        nodes2n[n2nodes[n]!.prev]!
+    }
+    
+    var start: Int? {
+        guard let end = end else { return nil }
+        return nodes2n[end.next]
+    }
+    
+    var count: Int { n2nodes.count }
+}
+
+extension Circle {
+    mutating func move(_ n: Int) -&gt; Int {
+        let n1 = next(n), n2 = next(n1), n3 = next(n2)
+        remove(n1)
+        remove(n2)
+        remove(n3)
+        
+        let dest = destination(for: n)
+        insert(n3, after: dest)
+        insert(n2, after: dest)
+        insert(n1, after: dest)
+        
+        return next(n)
+    }
+    
+    func destination(for n: Int) -&gt; Int {
+        var n = n
+        repeat {
+            n = n &gt; 1 ? n - 1 : max()!
+        } while contains(n) == false
+        return n
+    }
+    
+    func print(starting: Int) {
+        var n = starting
+        repeat {
+            Swift.print(n, terminator: "")
+            n = next(n)
+        } while n != starting
+        Swift.print()
+    }
+}
+
+// 1
+func p1(_ input: [Int]) {
+    var circle = Circle(input)
+    var current = circle.start!
+    for _ in 1...100 {
+        current = circle.move(current)
+    }
+    circle.print(starting: 1)
+}
+
+// 2
+func p2(_ input: [Int]) {
+    var input = input
+    while input.count &lt; 1_000_000 {
+        input.append(input.count + 1)
+    }
+    var circle = Circle(input)
+    var current = circle.start!
+    for i in 1...10_000_000 {
+        current = circle.move(current)
+        if i % 100_000 == 0 { print("\(i / 100_000)%") }
+    }
+    print(circle.next(1) * circle.next(circle.next(1)))
+}
+
+var input = "712643589".map { $0.wholeNumberValue! }
+p1(input)
+p2(input)
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 3142}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

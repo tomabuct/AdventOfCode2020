@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "20.txt")
+import Foundation
+
+let path = Bundle.main.path(forResource: "20", ofType: "txt")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .whitespacesAndNewlines)
+    .components(separatedBy: "\n\n")
+    .map { $0.components(separatedBy: ":\n") }
+    .map { (Int($0[0].dropFirst(5))!, $0[1]) }
+
+let tilesByID = Dictionary(uniqueKeysWithValues: input)
+    .mapValues { $0.split(separator: "\n").map { Array($0) } }
+
+let tileOsByID = tilesByID
+    .mapValues { $0.allOrientations }
+    
+let tileOs = tileOsByID
+    .flatMap { pair in pair.value.map { (ID: pair.key, tile: $0) } }
+
+let tileOsFittingLeftOf: [Set&lt;TileOID&gt;] = tileOs.map { right in
+    return Set(tileOs.enumerated()
+            .filter { $0.element.tile.fitsLeftOf(rect: right.tile) }
+            .map { $0.offset })
+}
+
+let tileOsFittingTopOf = tileOs.map { top in
+    Set(tileOs.enumerated()
+            .filter { $0.element.tile.fitsTopOf(rect: top.tile) }
+            .map { $0.offset })
+}
+
+let gridSide = Int(sqrt(Double(tilesByID.count)))
+let row = Array(repeating: nil as TileOID?, count: gridSide)
+let grid = Array(repeating: row, count: gridSide)
+
+typealias TileOID = Int
+typealias Rect = [[Character]]
+typealias Grid = [[TileOID?]]
+
+func print(_ s: Rect) {
+    for row in s {
+        for c in row {
+            print(c, terminator: "")
+        }
+        print()
+    }
+}
+
+func print(_ g: Grid) {
+    for row in g {
+        for tileO in row {
+            if let tileO = tileO {
+                print(tileOs[tileO].ID, terminator: ".")
+            } else {
+                print("    ", terminator: ".")
+            }
+        }
+        print()
+    }
+}
+
+extension Grid {
+    var tile: Rect {
+        let tile = tileOs.first!.tile
+        let d: Rect = Array&lt;[Character]&gt;(repeating: [Character](), count: tile.count);
+        return reduce([]) { rr, row in
+            let bottom = row.reduce(d) { rr, tileOID in
+                rr.concat(right: tileOs[tileOID!].tile.trimmingBorder)
+            }
+            return rr.concat(bottom: bottom)
+        }
+    }
+    
+    var nextOpen: (x: Int, y: Int)? {
+        for (y, row) in self.enumerated() {
+            for (x, c) in row.enumerated() {
+                if c == nil { return (x, y) }
+            }
+        }
+        return nil
+    }
+    
+    mutating func place(tileO: Int) -&gt; (x: Int, y: Int)? {
+        guard let nextOpen = nextOpen else { return nil }
+        
+        if nextOpen.y &gt; 0 {
+            let topTileO = self[nextOpen.y-1][nextOpen.x]!
+            guard tileOsFittingTopOf[tileO].contains(topTileO) else { return nil }
+        }
+        
+        if nextOpen.x &gt; 0 {
+            let leftTileO = self[nextOpen.y][nextOpen.x-1]!
+            guard tileOsFittingLeftOf[tileO].contains(leftTileO) else { return nil }
+        }
+        
+        self[nextOpen.y][nextOpen.x] = tileO
+        return nextOpen
+    }
+    
+    func filled() -&gt; Grid? {
+        var grid = self
+        grid.fill()
+        return grid
+    }
+    
+    mutating func fill() -&gt; Bool {
+        let unusedTileIDs = self.unusedTileIDs
+        guard unusedTileIDs.count &gt; 0 else { return true }
+        
+        let usableTileOs = tileOs.enumerated()
+            .filter { unusedTileIDs.contains($0.element.ID) }
+            .map { $0.offset }
+        
+        for (i, tileO) in usableTileOs.enumerated() {
+            if let placedAt = place(tileO: tileO) {
+                if fill() {
+                    return true
+                } else {
+                    self[placedAt.y][placedAt.x] = nil
+                }
+            }
+        } 
+        
+        return false
+    }
+    
+    var unusedTileIDs: Set&lt;Int&gt; {
+        let usedTileOIDs = flatMap { $0.compactMap { $0 } }
+        let usedTileIDs = usedTileOIDs.map { tileOs[$0].ID }
+        return Set(tilesByID.keys).subtracting(Set(usedTileIDs))
+    }
+}
+
+extension Rect {
+    func fitsTopOf(rect: Rect) -&gt; Bool {
+        self.last! == rect.first!
+    }
+    
+    func fitsLeftOf(rect: Rect) -&gt; Bool {
+        map { $0.last! } == rect.map { $0.first! }
+    }
+    
+    var trimmingBorder: Rect {
+        Array(self[1..&lt;self.count-1]).map { Array&lt;Character&gt;($0[1..&lt;$0.count-1]) }
+    }
+    
+    func concat(right: Rect) -&gt; Rect {
+        zip(self, right).map { $0.0 + $0.1 }
+    }
+    
+    func concat(bottom: Rect) -&gt; Rect {
+        self + bottom
+    }
+    
+    func rect(at: (x: Int, y: Int), ofSize size: (width: Int, height: Int)) -&gt; Rect? {
+        guard at.y+size.height-1 &lt; self.count &amp;&amp; at.x+size.width-1 &lt; self.first!.count else { return [] }
+        return (at.y..&lt;at.y+size.height).map { y in (at.x..&lt;at.x+size.width).map { x in self[y][x] } }
+    }
+    
+    func mask(with mask: Rect) -&gt; Rect {
+        zip(self, mask).map {
+            zip($0.0, $0.1).map {
+                $0.0 == $0.1 ? "#" : " "
+            }
+        }
+    }
+    
+    func searchFor(mask: Rect) -&gt; [(Int, Int)] {
+        (0..&lt;self.count).reduce([]) { r, y in
+            r + (0..&lt;self.first!.count).reduce([]) { r, x in
+                guard let rect = self.rect(at: (x, y), ofSize: (mask.first!.count, mask.count)) else { return r }
+                guard rect.mask(with: mask) == mask else { return r }
+                return r + mask.pounds.map { (x + $0.0, $0.1 + y) }
+            }
+        }
+    }
+    
+    var pounds: [(Int, Int)] {
+        enumerated().flatMap { row in 
+            row.1.enumerated().compactMap { c in
+                c.1 == "#" ? (c.0, row.0) : nil
+            }
+        }
+    }
+    
+    var allOrientations: [Rect] {
+        let flips = [ self, self.map { $0.reversed() }, self.reversed() ]
+        return Array&lt;Rect&gt;(Set(flips.flatMap { $0.rotations }))
+    }
+    
+    var rotations: [Rect] {
+        let r1 = self.rotatedRight,
+            r2 = r1.rotatedRight,
+            r3 = r2.rotatedRight
+        return [ self, r1, r2, r3 ]
+    }
+    
+    var rotatedRight: Rect {
+        var r = self
+        for (y, row) in self.enumerated() {
+            for (x, c) in row.enumerated() {
+                r[x][self.count-1-y] = c 
+            } 
+        }
+        return r
+    }
+}
+
+let start = Date()
+
+// 1
+let filledGrid = grid.filled()!
+print(tileOs[filledGrid.first!.first!!].ID
+    * tileOs[filledGrid.first!.last!!].ID
+    * tileOs[filledGrid.last!.first!!].ID
+    * tileOs[filledGrid.last!.last!!].ID)
+
+// 2
+let bigTile = filledGrid.tile
+let poundCount = bigTile.pounds.count
+let seaMonsterSprite = """
+                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #   
+""".components(separatedBy: .newlines).map { Array($0) }
+print(bigTile.allOrientations.map {
+    poundCount - $0.searchFor(mask: seaMonsterSprite).count
+}.min())
+
+print(Date().timeIntervalSince(start))
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 6679}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

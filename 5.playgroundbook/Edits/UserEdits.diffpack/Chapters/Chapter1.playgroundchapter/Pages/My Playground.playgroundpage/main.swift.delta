@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "5.input")
+
+import Foundation
+
+let path = Bundle.main.path(forResource: "5", ofType: "input")!
+let input = try! String(contentsOfFile: path)
+let lines = input.components(separatedBy: .newlines)
+let passes = lines.map {
+    $0.reduce((rows: (0, 127), cols: (0, 7))) {
+        switch($1) {
+        case "F":
+            return (rows: ($0.rows.0, $0.rows.0 + ($0.rows.1-$0.rows.0+1)/2 - 1), cols: $0.cols)
+            
+        case "B":
+            return (rows: ($0.rows.0 + ($0.rows.1-$0.rows.0+1)/2, $0.rows.1), cols: $0.cols)
+            
+        case "L":
+            return (rows: $0.rows, cols: ($0.cols.0, $0.cols.0 + ($0.cols.1-$0.cols.0+1)/2 - 1))
+            
+        case "R":
+            return (rows: $0.rows, cols: ($0.cols.0 + ($0.cols.1-$0.cols.0+1)/2, $0.cols.1))
+            
+        default:
+            return $0
+        }
+    }
+}.map { 8 * $0.rows.0 + $0.cols.0 }.sorted()
+
+let missing = passes.last!*(passes.last!+1)/2 - passes.first!*(passes.first!-1)/2 - passes.reduce(0, +)
+
+print(passes.last  , missing)
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 1055}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "19.txt")
+import Foundation
+
+let path = Bundle.main.path(forResource: "19", ofType: "txt")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .newlines)
+    .components(separatedBy: "\n\n")
+
+var ruleset = Ruleset(Dictionary(uniqueKeysWithValues: input[0]
+    .components(separatedBy: .newlines)
+    .map { $0.components(separatedBy: ": ") }
+    .map { (Int($0[0])!, $0[1]) }))
+
+// 1
+let messages = input[1].components(separatedBy: .newlines)
+print(messages.filter { does($0, match: ruleset[0]) }.count)
+
+class Ruleset {
+    let strings: [Int: String]
+    
+    init(_ s: [Int: String]) {
+        strings = s
+    }
+    
+    var rules = [Int: Rule]()
+    
+    subscript(i: Int) -&gt; Rule {
+        if let rule = rules[i] { return rule }
+        
+        let datum = strings[i]!
+        let rule = Rule()
+        rules[i] = rule
+        if datum.range(of: #""\w""#, options: .regularExpression) != nil {
+            rule.value = .character(datum.dropFirst().dropLast().first!)
+            
+        } else {
+            rule.value = .or(datum.components(separatedBy: " | ").map {
+                $0.split(separator: " ").map { self[Int($0)!] }
+            })
+        }
+        return rule
+    }
+}
+
+// Wrapping in a class since enums cannot self-reference
+// rdar://72687288 (Indirect enums should be reference types)
+class Rule {
+    enum Rule_ {
+        case character(Character)
+        case or([[Rule]])
+    }
+    
+    var _value: Rule_!
+    var value: Rule_ {
+        set { _value = newValue }
+        get { _value! }
+    }
+    
+    convenience init(_ r: Rule_) {
+        self.init()
+        _value = r
+    }
+}
+
+func does(_ s: String, match rule: Rule) -&gt; Bool {
+    return prefixesOf(s, matching: rule).contains(s)
+}
+
+func prefixesOf&lt;S&gt;(_ s: S, matching rule: Rule) -&gt; Set&lt;String&gt;  where S: StringProtocol {
+    switch rule.value {
+    case .character(let c):
+        guard let first = s.first, first == c else { return [] }
+        return [ String(first) ]
+            
+    case .or(let ors):
+        return ors.reduce([]) { r, rules in r.union(prefixesOf(s, matching: rules)) }
+    }
+}
+
+func prefixesOf&lt;S, T&gt;(_ s: S, matching rules: T) -&gt; Set&lt;String&gt; where S: StringProtocol,
+                                                                      T: RandomAccessCollection,
+                                                                      T.Element == Rule {
+    guard let first = rules.first else { return [ "" ] }
+    
+    return Set(prefixesOf(s, matching: first).flatMap { p1 in
+        prefixesOf(s.dropFirst(p1.count), matching: rules.dropFirst()).map { p2 in
+            p1 + p2
+        }
+    })
+}
+
+// 2
+ruleset[8].value = .or([[ruleset[42]], [ruleset[42], ruleset[8]]])
+ruleset[11].value = .or([[ruleset[42], ruleset[31]], [ruleset[42], ruleset[11], ruleset[31]]])
+print(messages.filter { does($0, match: ruleset[0]) }.count)
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 2889}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "14.txt")
+import Foundation
+
+let path = Bundle.main.path(forResource: "14", ofType: "txt")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .newlines)
+    .components(separatedBy: .newlines)
+    .map { $0.components(separatedBy: " = ") }
+    .map { i -&gt; Instruction in
+        switch i[0] {
+        case "mask":
+            return Instruction.mask(i[1])
+            
+        case let x where x.hasPrefix("mem"):
+            let a = Int(x.dropLast(1).dropFirst(4))!
+            return Instruction.set(a: a, v: Int(i[1])!)
+            
+        default: fatalError("bad instruction")
+    }}
+
+enum Instruction {
+    case mask(String)
+    case set(a: Int, v: Int)
+}
+
+func compute1(instructions: [Instruction]) -&gt; [Int: Int] {
+    func mask1(m: String, v: Int) -&gt; Int {
+        m.reversed().enumerated().reduce(v) {
+            switch $1.1 {
+            case "0":
+                return $0 &amp; ~(1 &lt;&lt; $1.0)
+                
+            case "1":
+                return $0 | (1 &lt;&lt; $1.0)
+                
+            default:
+                return $0
+            }
+        }
+    }
+    
+    var mem = [Int: Int]()
+    var mask = ""
+    for i in instructions {
+        switch i {
+        case .set(let a, let v):
+            mem[a] = mask1(m: mask, v: v)
+            
+        case .mask(let m):
+            mask = m
+        }
+    }
+    return mem
+}
+print(compute1(instructions: input)
+        .values
+        .reduce(0) { $0 + $1 })
+
+func compute2(instructions: [Instruction]) -&gt; [Int: Int] {
+    func mask2(m: String, a: Int) -&gt; [Int] {
+        m.reversed().enumerated().reduce([a]) { (r, i_bit) in
+            let setBit = 1 &lt;&lt; i_bit.0
+            switch i_bit.1 {
+            case "X":
+                return r.flatMap { [ $0 | setBit, $0 &amp; ~setBit ] }
+                
+            case "1":
+                return r.map { $0 | setBit }
+                
+            default:
+                return r
+            }
+        }
+    }
+    
+    var mem = [Int: Int]()
+    var mask = ""
+    for i in instructions {
+        switch i {
+        case .set(let a, let v):
+            for ma in mask2(m: mask, a: a) { mem[ma] = v } 
+            
+        case .mask(let m):
+            mask = m
+        }
+    }
+    return mem
+}
+print(compute2(instructions: input)
+        .values
+        .reduce(0) { $0 + $1 })
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 2343}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

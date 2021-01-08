@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "16.txt")
+import Foundation
+
+let path = Bundle.main.path(forResource: "16", ofType: "txt")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .newlines)
+    .components(separatedBy: "\n\n")
+
+let rules = input[0]
+    .trimmingCharacters(in: .newlines)
+    .components(separatedBy: .newlines)
+    .map { $0.components(separatedBy: ": ") }
+    .map { (field: $0[0],
+            intervals: $0[1]
+                .components(separatedBy: " or ")
+                .map { (i: String) -&gt; (Int, Int) in
+                    let interval = i
+                        .split(separator: "-")
+                        .map { Int($0)! }
+                    return (interval[0], interval[1])
+                })
+    }
+
+let yourTicket = input[1]
+    .split(separator: ":")[1]
+    .trimmingCharacters(in: .whitespacesAndNewlines)
+    .split(separator: ",")
+    .map { Int($0)! }
+
+let nearbyTickets = input[2]
+    .split(separator: ":")[1]
+    .trimmingCharacters(in: .whitespacesAndNewlines)
+    .components(separatedBy: .newlines)
+    .map { $0.split(separator: ",").map { Int($0)! } }
+
+typealias Rule = (field: String, intervals: [(Int, Int)])
+
+func isValid(value: Int, forRule rule: Rule) -&gt; Bool {
+    rule.intervals.reduce(false) { ir, i in
+        ir || (value &gt;= i.0 &amp;&amp; value &lt;= i.1) 
+    }
+}
+
+func isValid(value: Int) -&gt; Bool {
+    rules.reduce(false) { rr, rule in
+        rr || isValid(value: value, forRule: rule)
+    }
+}
+
+// 1
+print(nearbyTickets
+        .flatMap { $0.filter { !isValid(value: $0) } }
+        .reduce(0) { $0 + $1 })
+
+let validNearbyTickets = nearbyTickets
+        .filter { $0.reduce(true) { $0 &amp;&amp; isValid(value: $1) } }
+
+var field_opts = [String: Set&lt;Int&gt;]()
+for rule in rules {
+    for i in 0..&lt;rules.count {
+        if (validNearbyTickets.reduce(true) {
+            $0 &amp;&amp; isValid(value: $1[i], forRule: rule)
+        }) {
+            field_opts[rule.field, default: []].insert(i)
+        }
+    }
+}
+
+let fields = Set(rules.map { $0.field })
+var removed = false
+repeat {
+    removed = false
+    for (f, opts) in field_opts.filter { $0.value.count == 1 } {
+        let opt = opts.first!
+        for f2 in fields.subtracting([f]) {
+            if field_opts[f2]!.remove(opt) != nil { removed = true }
+        }
+    }
+} while removed
+
+var _field_i = [String?](repeating: nil, count: fields.count) 
+for (f, opt) in field_opts { _field_i[opt.first!] = f }
+let field_i = _field_i.map { $0! }
+
+// 2
+print(yourTicket
+    .enumerated()
+    .filter { field_i[$0.0].hasPrefix("departure") }
+    .map { $0.1 }
+    .reduce(1) { $0 * $1 })
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 2586}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

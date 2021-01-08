@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "21.txt")
+import Foundation
+
+let path = Bundle.main.path(forResource: "21", ofType: "txt")!
+let foods = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .newlines)
+    .components(separatedBy: .newlines)
+    .map { $0.dropLast().components(separatedBy: " (contains ") }
+    .map { (i: Set($0[0].components(separatedBy: " ")),
+            a: Set($0[1].components(separatedBy: ", "))) }
+
+let ingredients = foods.reduce(Set&lt;String&gt;()) { $0.union($1.i) }
+let allergens = foods.reduce(Set&lt;String&gt;()) { $0.union($1.a) }
+
+func foodIntersectionWith(allergen: String) -&gt; (i: Set&lt;String&gt;, a: Set&lt;String&gt;) { 
+    foods.reduce((i: Set&lt;String&gt;(), a: Set&lt;String&gt;())) {
+        guard $1.a.contains(allergen) else { return $0 }
+        if $0.a.isEmpty { return $1 }
+        return ($0.i.intersection($1.i), $0.a.intersection($1.a))
+    }
+}
+
+// 1
+let poison = allergens.reduce((i: Set&lt;String&gt;(), a: Set&lt;String&gt;())) { rr, allergen in
+    let fI = foodIntersectionWith(allergen: allergen)
+    return (rr.i.union(fI.i), rr.a.union(fI.a))
+}
+let clean = ingredients.subtracting(poison.i)
+print(foods.reduce(0) {
+    $0 + $1.i.reduce(0) {
+        $0 + (clean.contains($1) ? 1 : 0)
+    }
+})
+
+// 2
+var ingredientsByA = [String: Set&lt;String&gt;]()
+for allergen in allergens {
+    let fI = foodIntersectionWith(allergen: allergen)
+    ingredientsByA[fI.a.first!] = fI.i
+}
+
+var allergenByI = [String: String]()
+while !ingredientsByA.isEmpty {
+    let singletons = ingredientsByA.filter { $0.value.count == 1 }
+    for (allergen, ingredients) in singletons {
+        allergenByI[ingredients.first!] = allergen
+        ingredientsByA.removeValue(forKey: allergen)
+    }
+    for (a, ingredients) in ingredientsByA {
+        ingredientsByA[a] = ingredients.filter {
+            !allergenByI.keys.contains($0) 
+        }
+    } 
+}
+print(allergenByI
+        .sorted { $0.value &lt; $1.value }
+        .map { $0.key }
+        .reduce("") { $0.isEmpty ? $1 : "\($0),\($1)" })
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 1972}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

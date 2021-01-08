@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "13.input")
+import Foundation
+
+let path = Bundle.main.path(forResource: "13", ofType: "input")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .newlines)
+    .components(separatedBy: .newlines)
+
+let arrival = Int(input[0])!
+let buses = input[1]
+    .components(separatedBy: .punctuationCharacters)
+    .map { Int($0) }
+
+let arrivesIns = buses
+    .compactMap { $0 }
+    .map { (busID: $0, arrivesIn: ((arrival / $0) * $0 + $0) - arrival) }
+let earliest = arrivesIns.min { $0.arrivesIn &lt; $1.arrivesIn }!
+print(earliest.arrivesIn * earliest.busID)
+
+let start = Date()
+let i_buses = buses.enumerated().filter { $0.1 != nil }.map { ($0.0, $0.1!) }
+let maxBus = i_buses.max { $0.1 &lt; $1.1 }!
+let busOne = i_buses[0].1
+print(i_buses)
+
+let earliestPossible = i_buses.reduce(1) { $1.1 * $0 }
+//  print(min, m)
+
+
+
+//  let i = i_buses.reduce(1.0) { $0 * (min + Double($1.0)) }
+//  for i in 1... {
+//      m * i
+//  }
+
+//  let winner = stride(from: earliestPossible, to: Int.max, by: maxBus.1).lazy.first { timestamp in
+//      if timestamp % (maxBus.1 * 10000000) == 0 {
+//          let interval = Calendar.current.dateComponents([.second, .minute], from: start, to: Date())
+//          print(timestamp, interval)
+//      }
+//      for bus in i_buses { 
+//          if (timestamp - maxBus.0 + bus.0) % bus.1 &gt; 0 {
+//              return false 
+//          }
+//      }
+//      return true
+//  }! - maxBus.0
+//  print("winner: \(winner)")
+</string>
+			<key>ModifiedRange</key>
+			<string>{1, 1480}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{1, 0}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

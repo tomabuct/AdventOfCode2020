@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "7.input")
+import Foundation
+
+let path = Bundle.main.path(forResource: "7", ofType: "input")!
+let input = try! String(contentsOfFile: path).trimmingCharacters(in: .newlines)
+let edges = input.components(separatedBy: .newlines)
+    .map { $0.trimmingCharacters(in: .punctuationCharacters) }
+    .map { $0.components(separatedBy: " contain ") }
+    .map { rule -&gt; [(container: String, contains: (color: String, count: Int))] in
+        let contains = rule[1]
+            .components(separatedBy: ", ")
+            .compactMap { normalize($0) }
+        let container = normalize(rule[0])!.color
+        return contains.map { (container: container, contains: $0) }
+    }
+    .flatMap({ $0 })
+
+let graph = Dictionary(grouping: edges) { $0.0 }
+    .mapValues { $0.map { $0.1 } }
+
+func normalize(_ item: String) -&gt; (color: String, count: Int)? {
+    let description = item // " 2 dark red bags"
+        .trimmingCharacters(in: .whitespaces) // " 2 dark red bags"
+        .dropLast(4) // "2 dark red "
+        .trimmingCharacters(in: .whitespaces) // "2 dark red"
+    
+    let color = description
+        .trimmingCharacters(in: CharacterSet.decimalDigits.union(.whitespaces))
+    
+    let count = description.dropLast(color.count)
+        .trimmingCharacters(in: .whitespaces)
+    
+    if let count = Int(count) {
+        return (color: color, count: count)
+    } else {
+        return color == "no other" ? nil : (color: color, count: 1)
+    }
+}
+
+func searchFor(bag: String, inBag container: String) -&gt; Bool {
+    let bagCounts = graph[container] ?? []
+    let bags = bagCounts.map { $0.color }
+    return bags.reduce(false) {
+        $0 || (bag == $1 ? true : searchFor(bag: bag, inBag: $1))
+    }
+}
+
+func numberOfBagsIn(bag: String) -&gt; Int {
+    let bagCounts = graph[bag] ?? []
+    return bagCounts.reduce(0) { $0 + $1.count * numberOfBagsIn(bag: $1.color) + $1.count }
+}
+
+print(graph.keys
+        .map { searchFor(bag: "shiny gold", inBag: $0) }
+        .filter { $0 }
+        .count)
+
+print(numberOfBagsIn(bag: "shiny gold"))
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 2052}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

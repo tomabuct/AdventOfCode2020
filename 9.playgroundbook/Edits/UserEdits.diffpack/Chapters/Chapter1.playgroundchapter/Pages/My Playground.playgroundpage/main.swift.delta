@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>import Foundation
+
+let path = Bundle.main.path(forResource: "9", ofType: "input")!
+let input = try! String(contentsOfFile: path).trimmingCharacters(in: .newlines)
+    .components(separatedBy: .whitespacesAndNewlines)
+    .map { Int($0)! }
+
+let preambleLength = 25
+var p1 = 0
+for i in (preambleLength..&lt;input.count) {
+    let r = input[i-preambleLength..&lt;i]
+    var found = false
+    for j in r {
+        for k in r {
+            if (j != k &amp;&amp; j + k == input[i]) {
+                found = true
+            }
+        }
+    }
+    if (!found) { p1 = input[i] }
+}
+print(p1)
+
+var p2 = 0
+for i in (0..&lt;(input.count-1)) {
+    for j in (i+1..&lt;input.count) {
+        let r = input[i...j]
+        let sum = r.reduce(0) { $0 + $1 }
+        if sum == p1 {
+            p2 = r.min()! + r.max()!
+        }
+    }
+}
+print(p2)
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 808}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

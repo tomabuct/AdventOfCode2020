@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "18.txt")
+import Foundation
+
+let path = Bundle.main.path(forResource: "18", ofType: "txt")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .whitespacesAndNewlines)
+    .components(separatedBy: .newlines)
+
+print(input.map { evaluate($0) }.reduce(0) { $0 + $1 })
+
+func evaluate(_ expr: String) -&gt; Int {
+    return 1
+}
+
+func evaluate(_ ast: AST) -&gt; Int {
+    switch ast {
+    case .Node(let l, let op, let r):
+        switch op {
+        case .Mul: return evaluate(l) * evaluate(r)
+        case .Add: return evaluate(l) + evaluate(r)
+        }
+        
+    case .Leaf(let v):
+        return v
+    }
+}
+
+// "5*(8)" =&gt; ["5", "*", "(8)"]
+// "(5*8)" =&gt; ["5", "*", "8)"]
+
+indirect enum AST {
+    enum Op { case Mul, Add }
+    case Node(l: AST, op: Op, r: AST)
+    case Leaf(Int)
+}
+
+
+
+func tokenize(_ expr: String) -&gt; [String] {
+    enum State {
+        case Start
+        case Left
+        case Op
+        case Right
+        case End
+    }
+    
+    var s = State.Start
+    var i = expr.startIndex
+    let c = expr[i]
+    var tokens = [String]()
+    while i &lt; expr.endIndex {
+        print(expr[i])
+        i = expr.index(after: i)
+        switch c {
+        case _ where c.isWhitespace: break
+            
+        case "(":
+            switch &lt;#value#&gt; {
+            case &lt;#pattern#&gt;:
+                &lt;#code#&gt; 
+            default:
+                &lt;#code#&gt; 
+            }
+            
+            expr.lastIndex(of: ")")
+            
+        default:
+            print("*")
+        }
+    }
+    return []
+}
+
+print(tokenize("5*8"))
+
+//  func parse(_ expr: String) -&gt; AST {
+
+//      return []
+//  }
+//  print(input[0], parse(input[0]))
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 1678}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

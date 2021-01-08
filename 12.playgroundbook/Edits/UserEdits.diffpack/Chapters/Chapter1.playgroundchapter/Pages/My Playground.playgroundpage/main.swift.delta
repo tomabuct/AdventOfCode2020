@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>import Foundation
+
+let path = Bundle.main.path(forResource: "12", ofType: "input")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .newlines)
+    .components(separatedBy: .newlines)
+    .map { ($0[$0.startIndex], Int($0[$0.index(after: $0.startIndex)...])!) }
+    
+print(input.reduce((0, 0, Character("E"))) { r, i in
+    switch i.0 {
+    case "N": return (r.0 - i.1, r.1, r.2)
+    case "S": return (r.0 + i.1, r.1, r.2)
+    case "E": return (r.0, r.1 + i.1, r.2)
+    case "W": return (r.0, r.1 - i.1, r.2)
+    case "F":
+        switch r.2 {
+        case "N": return (r.0 - i.1, r.1, r.2)
+        case "S": return (r.0 + i.1, r.1, r.2)
+        case "E": return (r.0, r.1 + i.1, r.2)
+        case "W": return (r.0, r.1 - i.1, r.2)
+        default: return r
+        }
+        
+    case "L", "R":
+        func turn(card: Character) -&gt; Character {
+            let left = i.0 == "L" 
+            switch card {
+            case "N": return left ? "W" : "E"
+            case "E": return left ? "N" : "S"
+            case "S": return left ? "E" : "W"
+            case "W": return left ? "S" : "N"
+            default: return card
+            }
+        }
+        let turns = (i.1 % 360) / 90
+        let card = (1...turns).reduce(r.2) { a, _ in turn(card: a) }
+        return (r.0, r.1, card)
+        
+    default:
+        return r
+    }
+})
+#fileLiteral(resourceName: "12.input")
+</string>
+			<key>ModifiedRange</key>
+			<string>{1, 1398}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{1, 0}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

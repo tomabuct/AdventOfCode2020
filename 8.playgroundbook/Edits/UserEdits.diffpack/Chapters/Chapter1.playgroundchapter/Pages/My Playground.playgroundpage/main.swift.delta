@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>import Foundation
+
+let path = Bundle.main.path(forResource: "8", ofType: "input")!
+let input = try! String(contentsOfFile: path).trimmingCharacters(in: .newlines)
+
+let instructions = input.components(separatedBy: .newlines)
+    .map { $0.split(separator: " ") }
+    .map { (i: $0[0], op: Int($0[1])!) }
+
+func acc(flippingInstructionAtIndex flipIP: Int?) -&gt; (terminates: Bool, acc: Int) {
+    var acc = 0, ip = 0, executed = Set&lt;Int&gt;()
+    while ip &lt; instructions.count {
+        guard !executed.contains(ip) else { return (false, acc) }
+        
+        var i = instructions[ip]
+        executed.insert(ip)
+        
+        if let flipIP = flipIP, flipIP == ip {
+            switch i.i {
+            case "jmp":
+                i.i = "nop"
+                
+            case "nop":
+                i.i = "jmp"
+                
+            default: break
+            }
+        }
+        
+        switch i.i {
+        case "jmp":
+            ip += i.op
+            
+        case "nop":
+            ip += 1
+            
+        case "acc":
+            acc += i.op
+            ip += 1
+                
+        default: break
+        }
+    }
+    return (true, acc)
+}
+
+print(acc(flippingInstructionAtIndex: nil))
+print((0..&lt;instructions.count)
+        .map { acc(flippingInstructionAtIndex: $0) }
+        .filter { $0.terminates }
+)
+#fileLiteral(resourceName: "8.input")
+</string>
+			<key>ModifiedRange</key>
+			<string>{1, 1364}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{1, 0}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

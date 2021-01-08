@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "11.input")
+
+import Foundation
+
+let path = Bundle.main.path(forResource: "11", ofType: "input")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .newlines)
+    .components(separatedBy: .newlines)
+    .map { Array($0) }
+
+typealias Adjacents = ((Int, Int), [[Character]]) -&gt; [Character]
+
+func isValid(at: (Int, Int), in: [[Character]]) -&gt; Bool {
+    at.0 &gt;= 0 &amp;&amp; at.0 &lt; `in`.count &amp;&amp; at.1 &gt;= 0 &amp;&amp; at.1 &lt; `in`[at.0].count 
+}
+
+func apply(seats: [[Character]], tolerance: Int, adjacents: Adjacents) -&gt; [[Character]] {
+    var a = seats
+    for (r, row) in seats.enumerated() {
+        for (c, seat) in row.enumerated() {
+            let adjs = adjacents((r, c), seats)
+            if seat == "L" &amp;&amp; adjs.filter { $0 == "#" }.count == 0 {
+                a[r][c] = "#"
+            } else if seat == "#" &amp;&amp; adjs.filter { $0 == "#" }.count &gt;= tolerance {
+                a[r][c] = "L"
+            }
+        }
+    }
+    return a
+}
+
+func converge(seats: [[Character]], tolerance: Int, adjacents: Adjacents) -&gt; Int {
+    var j = input, i = [[Character]]()
+    while i != j {
+        i = j
+        j = apply(seats: i, tolerance: tolerance, adjacents: adjacents)
+    }
+    return j.flatMap { $0 }.filter { $0 == "#" }.count
+}
+
+func adjacent1(to: (Int, Int), in: [[Character]]) -&gt; [Character] {
+    let adjs = [ (to.0-1, to.1-1), (to.0-1, to.1), (to.0-1, to.1+1),
+                 (to.0, to.1-1), (to.0, to.1+1),
+                 (to.0+1, to.1-1), (to.0+1, to.1), (to.0+1, to.1+1) ]
+    return adjs
+        .filter { isValid(at: $0, in: `in`) }
+        .map { `in`[$0.0][$0.1] }
+}
+print(converge(seats: input, tolerance: 4, adjacents: { adjacent1(to: $0, in: $1) }))
+
+func adjacent2(to: (Int, Int), in: [[Character]]) -&gt; [Character] {
+    func adjacent(inDirection direction: (Int, Int)) -&gt; Character? {
+        var at = to
+        repeat {
+            at = (at.0 + direction.0, at.1 + direction.1)
+            guard isValid(at: at, in: `in`) else { return nil }
+            let seat = `in`[at.0][at.1] 
+            if seat != "." { return seat }
+        } while true
+    }
+    
+    let directions = (-1...1).flatMap { i in
+        (-1...1).compactMap { j in i == 0 &amp;&amp; j == 0 ? nil : (i, j) }
+    }
+    return directions.compactMap { adjacent(inDirection: $0) }
+}
+print(converge(seats: input, tolerance: 5, adjacents: { adjacent2(to: $0, in: $1) }))
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 2389}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

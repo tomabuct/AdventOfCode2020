@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "17.txt")
+import Foundation
+import CoreGraphics
+
+let path = Bundle.main.path(forResource: "17", ofType: "txt")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .whitespacesAndNewlines)
+    .components(separatedBy: .newlines)
+
+struct Point: Hashable { var ds: [Int] }
+typealias Pocket = [Point: Void]
+
+func pocketFrom(input: [String], d: Int) -&gt; Pocket {
+    var pocket = Pocket()
+    for (y, row) in input.enumerated() {
+        for (x, c) in row.enumerated() {
+            let ds = [x, y] + [Int](repeating: 0, count: d - 2)
+            pocket[Point(ds: ds)] = c == "#" ? () : nil
+        }
+    }
+    return pocket
+}
+
+func neighborsOf(_ point: Point) -&gt; [Point] {
+    var ns = [ point ] 
+    for d in 0..&lt;point.ds.count {
+        ns = ns.flatMap { n in
+            (-1...1).map {
+                var p = n 
+                p.ds[d] += $0
+                return p
+            }
+        }
+    }
+    ns.removeAll(where: { $0 == point })
+    return ns
+}
+
+func cycle(_ p: Pocket) -&gt; Pocket {
+    var r = p
+    for point in p.keys.flatMap { [$0] + neighborsOf($0) } {
+        let n = neighborsOf(point).compactMap { p[$0] }.count
+        r[point] = p[point] == nil ? (n == 3 ? () : nil) : ((n == 3 || n == 2) ? () : nil) 
+    } 
+    return r
+}
+
+let pocket3 = pocketFrom(input: input, d: 3)
+print((1...6)
+        .reduce(pocket3) { r, _ in cycle(r) }
+        .count)
+
+let pocket4 = pocketFrom(input: input, d: 4)
+print((1...6)
+        .reduce(pocket4) { r, _ in cycle(r) }
+        .count)
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 1535}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>
