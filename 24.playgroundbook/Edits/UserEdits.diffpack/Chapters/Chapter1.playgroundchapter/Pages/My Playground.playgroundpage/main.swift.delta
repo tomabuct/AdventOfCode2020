@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>#fileLiteral(resourceName: "24.txt")
+import Foundation
+
+let path = Bundle.main.path(forResource: "24", ofType: "txt")!
+let input = try! String(contentsOfFile: path)
+    .trimmingCharacters(in: .whitespacesAndNewlines)
+    .components(separatedBy: .newlines)
+    .map { directions(from: $0) }
+
+enum Direction { case ne, nw, se, sw, e, w }
+
+func directions&lt;S&gt;(from s: S) -&gt; [Direction] where S: StringProtocol {
+    if s.hasPrefix("ne") {
+        let i = s.index(s.startIndex, offsetBy: 2)
+        return [.ne] + directions(from: s[i...])
+    } else if s.hasPrefix("nw") {
+        let i = s.index(s.startIndex, offsetBy: 2)
+        return [.nw] + directions(from: s[i...])
+    } else if s.hasPrefix("se") {
+        let i = s.index(s.startIndex, offsetBy: 2)
+        return [.se] + directions(from: s[i...])
+    } else if s.hasPrefix("sw") {
+        let i = s.index(s.startIndex, offsetBy: 2)
+        return [.sw] + directions(from: s[i...])
+    } else if s.hasPrefix("e") {
+        let i = s.index(s.startIndex, offsetBy: 1)
+        return [.e] + directions(from: s[i...])
+    } else if s.hasPrefix("w") {
+        let i = s.index(s.startIndex, offsetBy: 1)
+        return [.w] + directions(from: s[i...])
+    } else {
+        return []
+    }
+}
+
+struct Point: Hashable { var x, y: Int }
+
+func coord(for ds: [Direction]) -&gt; Point {
+    ds.reduce(Point(x: 0, y: 0)) {
+        var p = $0
+        switch $1 {
+        case .e: p.x += 1
+        case .w: p.x -= 1
+        case .ne: p.y -= 1; p.x += 1 
+        case .nw: p.y -= 1
+        case .se: p.y += 1
+        case .sw: p.y += 1; p.x -= 1
+        }
+        return p
+    }
+}
+
+var tiles = [Point: Void]()
+for ds in input {
+    let c = coord(for: ds)
+    tiles[c] = tiles[c] == nil ? () : nil 
+}
+
+// 1
+print(tiles.count)
+
+func cycle(_ tiles: [Point: Void]) -&gt; [Point: Void] {
+    var cycled = tiles
+    var all = Set(tiles.keys.flatMap {
+        [$0] + adjacents(to: $0)
+    })
+    for tile in all {
+        let c = adjacents(to: tile).compactMap { tiles[$0] }.count
+        let isBlack = tiles[tile] != nil
+        if !isBlack &amp;&amp; c == 2 {
+            cycled[tile] = ()
+        } else if isBlack &amp;&amp; (c == 0 || c &gt; 2) {
+            cycled[tile] = nil
+        }
+    }
+    return cycled
+}
+
+func adjacents(to: Point) -&gt; [Point] {
+    [ Point(x: to.x+1, y: to.y),
+      Point(x: to.x-1, y: to.y),
+      Point(x: to.x, y: to.y-1),
+      Point(x: to.x, y: to.y+1),
+      Point(x: to.x+1, y: to.y-1),
+      Point(x: to.x-1, y: to.y+1) ]
+}
+
+// 2
+for _ in 1...100 { tiles = cycle(tiles) }
+print(tiles.count)
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 2539}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>

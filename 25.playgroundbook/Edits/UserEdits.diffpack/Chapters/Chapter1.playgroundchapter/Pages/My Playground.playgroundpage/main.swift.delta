@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>import Foundation
+
+let pK1 = 15113849, pK2 = 4206373
+
+struct Loop: Sequence, IteratorProtocol {
+    private var v = 1, subject: Int
+    init(subject: Int) { self.subject = subject }
+    mutating func next() -&gt; Int? {
+        defer {
+            v *= subject
+            v %= 20201227
+        }
+        return v
+    }
+}
+
+let (s1, _) = Loop(subject: 7).enumerated().first { $0.1 == pK1 }!
+print(Loop(subject: pK2).enumerated().first { $0.0 == s1 }!.1)
+</string>
+			<key>ModifiedRange</key>
+			<string>{1, 450}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{1, 0}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>
